@@ -2006,14 +2006,22 @@
             // 网站顺序保存事件
             document.addEventListener('click', async (e) => {
                 if (e.target.classList.contains('save-sites-order-btn')) {
-                    const categoryId = e.target.dataset.categoryId;
-                    const listEl = document.getElementById(`sites-sortable-${categoryId}`);
-                    const orderedIds = Array.from(listEl.children).map(el => el.dataset.siteId);
-                    
+                    const categoryIdRaw = e.target.dataset.categoryId;
+                    const categoryId = Number.parseInt(categoryIdRaw, 10);
+                    const listEl = document.getElementById(`sites-sortable-${categoryIdRaw}`);
+                    if (!listEl) return;
+
+                    const orderedIds = Array.from(listEl.children)
+                        .map((el) => Number.parseInt(el.dataset.siteId, 10))
+                        .filter((id) => Number.isFinite(id));
+
                     try {
                         await api.post('sites/order', { categoryId, orderedIds });
                         customAlert('sitesOrderSaved');
                         e.target.classList.add('hidden');
+                        // 刷新数据并重渲染，立即体现排序结果
+                        await loadInitialData();
+                        renderAll();
                     } catch (err) {
                         console.error('Failed to save sites order:', err);
                         customAlert('Failed to save sites order.', false);
