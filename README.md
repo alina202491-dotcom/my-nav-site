@@ -177,7 +177,9 @@ INSERT OR IGNORE INTO user_preferences (key, value) VALUES
   ('enable_pinyin_search', 'true');
 
 
+-- 初始化排序字段（新库无影响，老库可一次性纠正空值）
 UPDATE sites SET display_order = id WHERE display_order = 0 OR display_order IS NULL;
+UPDATE categories SET displayOrder = id WHERE displayOrder IS NULL;
 ```
 
 ## 方法二：分步执行（如果一次性执行失败）
@@ -265,6 +267,14 @@ INSERT OR IGNORE INTO user_preferences (key, value) VALUES
 
 ### 8. 更新现有数据（如果是升级）
 ```sql
+-- 若老库缺少 categories.displayOrder 字段，请先补列
+-- 注：如果表中已存在该列，下面的 ADD COLUMN 会报错，跳过即可
+ALTER TABLE categories ADD COLUMN displayOrder INTEGER;
+
+-- 初始化分类显示顺序（仅为空值时设置，避免覆盖已有顺序）
+UPDATE categories SET displayOrder = id WHERE displayOrder IS NULL;
+
+-- 初始化网站显示顺序（仅为空或为 0 时设置）
 UPDATE sites SET display_order = id WHERE display_order = 0 OR display_order IS NULL;
 ```
 
