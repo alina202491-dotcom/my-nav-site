@@ -177,7 +177,6 @@ INSERT OR IGNORE INTO user_preferences (key, value) VALUES
   ('enable_pinyin_search', 'true');
 
 
--- 初始化排序字段（新库无影响，老库可一次性纠正空值）
 UPDATE sites SET display_order = id WHERE display_order = 0 OR display_order IS NULL;
 UPDATE categories SET displayOrder = id WHERE displayOrder IS NULL;
 ```
